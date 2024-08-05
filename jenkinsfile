@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Code Checkout') {
+            steps {
+                git 'https://github.com/Gokulabala/k8s_cicd.git'
+            }
+        }
+        stage('Docker Build image') {
+            steps {
+               sh 'sudo docker build -t gokulabalan/myimage:latest .'
+               sh 'sudo docker build -t gokulabalan/myimage:${BUILD_NUMBER} .'
+            }
+        }
+        stage('Docker push image') {
+            steps {
+                sh 'sudo docker push gokulabalan/myimage:latest'
+                sh 'sudo docker push gokulabalan/myimage:${BUILD_NUMBER}'
+            }
+        }
+        stage('Deployment in Kubernetes') {
+            steps {
+                sh 'sudo kubectl apply -f pod.yaml'
+                sh 'sudo kubectl rollout restart deployment loadbalancer-pod'
+            }
+        }
+    }
+}
+
